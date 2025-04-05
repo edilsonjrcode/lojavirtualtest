@@ -1,15 +1,13 @@
 package serverest;
 
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
-public class CarrinhoTest extends BaseTest{
+
+public class CarrinhoTest extends BaseTest {
 
     @Test
     public void deveListarCarrinhos() {
@@ -20,7 +18,6 @@ public class CarrinhoTest extends BaseTest{
                 .body("carrinhos", not(empty())).log().all();
     }
 
-    @Disabled
     @Test
     public void naoDeveCadastrarCarrinhoSemProdutos() {
         String carrinhoVazio = "{\"produtos\":[]}";
@@ -36,4 +33,22 @@ public class CarrinhoTest extends BaseTest{
                 .body("produtos", containsString("produtos não contém 1 valor obrigatório"))
                 .log().all();
     }
+
+    @Test
+    public void naoDeveCadastrarCarrinhoSemToken() {
+        String carrinhoVazio = "{\"produtos\":[]}";
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(carrinhoVazio).log().all()
+                .when()
+                .post("/carrinhos")
+                .then()
+                .statusCode(401)
+                .body("message",
+                        containsString(
+                                "Token de acesso ausente, inválido, expirado ou usuário do token não existe mais"))
+                .log().all();
+    }
+
 }
